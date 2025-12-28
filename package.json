@@ -1,0 +1,44 @@
+{
+  "name": "ber-tlv",
+  "version": "1.0.0",
+  "description": "Modern TypeScript library for ASN.1 BER-TLV encoding and decoding",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "asn1",
+    "ber",
+    "tlv",
+    "ber-tlv",
+    "parser",
+    "encoder",
+    "decoder",
+    "emv",
+    "smartcard"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
