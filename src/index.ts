@@ -79,27 +79,26 @@ export function parseTag(data: Uint8Array, offset: number): ParseTagResult {
   const tagBytes: number[] = [firstByte];
 
   while (i < data.length) {
-    const byte = data[i];
-    if (byte === undefined) {
-      throw new Error(`Unexpected end of data while parsing multi-byte tag`);
-    }
+    const byte = data[i]!;
     tagBytes.push(byte);
     tagNumber = (tagNumber << 7) | (byte & 0x7f);
     i++;
     if ((byte & 0x80) === 0) {
-      break;
+      // Found terminating byte (no continuation bit)
+      return {
+        tag: {
+          number: tagNumber,
+          constructed,
+          class: tagClass,
+          bytes: new Uint8Array(tagBytes),
+        },
+        bytesRead: tagBytes.length,
+      };
     }
   }
 
-  return {
-    tag: {
-      number: tagNumber,
-      constructed,
-      class: tagClass,
-      bytes: new Uint8Array(tagBytes),
-    },
-    bytesRead: tagBytes.length,
-  };
+  // Reached end of data without finding terminating byte
+  throw new Error("Unexpected end of data while parsing multi-byte tag");
 }
 
 /**
