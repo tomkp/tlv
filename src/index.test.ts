@@ -9,7 +9,7 @@ import {
   encode,
   type Tlv,
   TagClass,
-} from "../src/index.ts";
+} from "./index.ts";
 
 describe("Tag parsing", () => {
   it("parses single-byte primitive tag", () => {

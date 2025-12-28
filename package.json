@@ -17,7 +17,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
-    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test": "node --experimental-strip-types --test src/*.test.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
