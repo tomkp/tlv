@@ -66,6 +66,12 @@ describe("Tag encoding", () => {
     const bytes = encodeTag({ number: 0x27, constructed: false, class: TagClass.ContextSpecific });
     assert.deepEqual(bytes, new Uint8Array([0x9f, 0x27]));
   });
+
+  it("encodes three-byte tag with continuation bits", () => {
+    // Tag number 0x82 (130) needs two bytes: 0x81 0x02 (130 = 1*128 + 2)
+    const bytes = encodeTag({ number: 0x82, constructed: false, class: TagClass.ContextSpecific });
+    assert.deepEqual(bytes, new Uint8Array([0x9f, 0x81, 0x02]));
+  });
 });
 
 describe("Length parsing", () => {
@@ -208,5 +214,66 @@ describe("Roundtrip encoding/decoding", () => {
     const parsed = parse(original);
     const encoded = encode(parsed);
     assert.deepEqual(encoded, original);
+  });
+});
+
+describe("Error handling", () => {
+  describe("parseTag errors", () => {
+    it("throws when no data at offset", () => {
+      const data = new Uint8Array([]);
+      assert.throws(() => parseTag(data, 0), { message: "No data at offset 0" });
+    });
+
+    it("throws when offset is beyond data", () => {
+      const data = new Uint8Array([0x01]);
+      assert.throws(() => parseTag(data, 5), { message: "No data at offset 5" });
+    });
+
+    it("throws for truncated multi-byte tag", () => {
+      // 0x1F indicates multi-byte tag, but no subsequent bytes
+      const data = new Uint8Array([0x1f]);
+      assert.throws(() => parseTag(data, 0), { message: "Unexpected end of data while parsing multi-byte tag" });
+    });
+
+    it("throws for incomplete multi-byte tag continuation", () => {
+      // 0x9F starts multi-byte, 0x81 has continuation bit set but no following byte
+      const data = new Uint8Array([0x9f, 0x81]);
+      assert.throws(() => parseTag(data, 0), { message: "Unexpected end of data while parsing multi-byte tag" });
+    });
+  });
+
+  describe("parseLength errors", () => {
+    it("throws when no data at offset", () => {
+      const data = new Uint8Array([]);
+      assert.throws(() => parseLength(data, 0), { message: "No data at offset 0" });
+    });
+
+    it("throws for indefinite length encoding", () => {
+      // 0x80 means indefinite length (not supported)
+      const data = new Uint8Array([0x80]);
+      assert.throws(() => parseLength(data, 0), { message: "Indefinite length not supported" });
+    });
+
+    it("throws for truncated long form length", () => {
+      // 0x82 means 2 length bytes follow, but only 1 provided
+      const data = new Uint8Array([0x82, 0x01]);
+      assert.throws(() => parseLength(data, 0), { message: "Unexpected end of data while parsing length" });
+    });
+
+    it("throws for missing long form length bytes", () => {
+      // 0x81 means 1 length byte follows, but none provided
+      const data = new Uint8Array([0x81]);
+      assert.throws(() => parseLength(data, 0), { message: "Unexpected end of data while parsing length" });
+    });
+  });
+
+  describe("encodeLength errors", () => {
+    it("throws for negative length", () => {
+      assert.throws(() => encodeLength(-1), { message: "Length cannot be negative" });
+    });
+
+    it("throws for negative length -100", () => {
+      assert.throws(() => encodeLength(-100), { message: "Length cannot be negative" });
+    });
   });
 });
