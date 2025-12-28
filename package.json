@@ -1,6 +1,6 @@
 {
   "name": "@tomkp/ber-tlv",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Modern TypeScript library for ASN.1 BER-TLV encoding and decoding",
   "type": "module",
   "exports": {
